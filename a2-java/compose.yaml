@@ -34,6 +34,7 @@ services:
     networks:
       - stub1
       - stub3
+      - stub4
       - trans1
 
   router2:
@@ -64,7 +65,6 @@ services:
       HOSTNAME: router3
     networks:
       - stub2
-    #  - stub4
       - trans2
 
   # 2 endpoints creating traffic
@@ -117,21 +117,21 @@ services:
     networks:
       - stub3
       
- # client4:
-  #  profiles: ["endpoints"]
-  #  image: "jvimage"
-  #  build: .
-   # volumes:
-   #   - .:/compnets
-  #  command: java ClientReceiver router3
-  #  stdin_open: true
-  #  tty: true
-   # depends_on:
-  #    - router3
-   # environment:
- #     HOSTNAME: client4
- #   networks:
-  #    - stub4
+  client4:
+    profiles: ["endpoints"]
+    image: "jvimage"
+    build: .
+    volumes:
+      - .:/compnets
+    command: java Client router1
+    stdin_open: true
+    tty: true
+    depends_on:
+      - router1
+    environment:
+      HOSTNAME: client4
+    networks:
+      - stub4
 
 
 # 2 Stub networks and 3 transient networks
