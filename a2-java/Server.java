@@ -28,6 +28,7 @@ public class Server {
 			sendHelloToAllNetworks(routerAddresses);
 			System.out.println("Listening...");
 			String prevAddress;
+			SocketAddress prevAddressForResponse = null;
 
 			while(true) {
 				// Receive packet
@@ -42,6 +43,7 @@ public class Server {
 				byte packetType= header.get();
 				switch(packetType) {
 					case Header.PUB:
+						prevAddressForResponse = packet.getSocketAddress();
 						InetAddress address = packet.getAddress();
 						prevAddress = address.getHostAddress();
 						System.out.println("received PUB packet from : " + prevAddress);
@@ -68,6 +70,8 @@ public class Server {
 						break;
 					case Header.RESPONSE:
 						System.out.println("Rcv response:" + packet.getSocketAddress());
+						packet.setSocketAddress(prevAddressForResponse);
+						socket.send(packet);
 						break;
 					case Header.RECEIVERHELLO:
 						System.out.println("entered receiverHello");
