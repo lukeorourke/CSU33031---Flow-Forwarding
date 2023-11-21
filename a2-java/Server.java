@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.ArrayList;
+
 
 public class Server {
 
@@ -28,7 +30,9 @@ public class Server {
 			sendHelloToAllNetworks(routerAddresses);
 			System.out.println("Listening...");
 			String prevAddress;
-			SocketAddress prevAddressForResponse = null;
+			ArrayList<SocketAddress> prevAddressForResponse = new ArrayList<>();
+
+			int responseCounter = 0;
 
 			while(true) {
 				// Receive packet
@@ -43,7 +47,7 @@ public class Server {
 				byte packetType= header.get();
 				switch(packetType) {
 					case Header.PUB:
-						prevAddressForResponse = packet.getSocketAddress();
+						prevAddressForResponse.add(packet.getSocketAddress());
 						InetAddress address = packet.getAddress();
 						prevAddress = address.getHostAddress();
 						System.out.println("received PUB packet from : " + prevAddress);
@@ -70,8 +74,9 @@ public class Server {
 						break;
 					case Header.RESPONSE:
 						System.out.println("Rcv response:" + packet.getSocketAddress());
-						packet.setSocketAddress(prevAddressForResponse);
+						packet.setSocketAddress(prevAddressForResponse.get(responseCounter));
 						socket.send(packet);
+						responseCounter++;
 						break;
 					case Header.RECEIVERHELLO:
 						System.out.println("entered receiverHello");
@@ -180,6 +185,9 @@ public class Server {
 		String localHostAddress = localHost.getHostAddress();
 		System.out.println("local host address : " + addresses.get(0));
 		System.out.println("local host address : " + addresses.get(1));
+		if(addresses.size()>2) {
+			System.out.println("local host address : " + addresses.get(2));
+		}
 		int i = 0;
 		for (String baseAddr : addresses) {
 			String localAddress = addresses.get(i);
