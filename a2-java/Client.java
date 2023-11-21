@@ -15,6 +15,7 @@ public class Client {
 		System.out.println("--- Client start ---");
 
 		try {
+			Thread.sleep(50000);
 			byte[] destIdentifier = new byte[]{1, 2, 3, 4};
 			socket= new DatagramSocket();
 

@@ -27,6 +27,7 @@ public class Server {
 			identifier = generateRandomIdentifier();
 			sendHelloToAllNetworks(routerAddresses);
 			System.out.println("Listening...");
+			String prevAddress;
 
 			while(true) {
 				// Receive packet
@@ -41,16 +42,18 @@ public class Server {
 				byte packetType= header.get();
 				switch(packetType) {
 					case Header.PUB:
-						prevAddress = packet.getSocketAddress();
-						System.out.println("entered pub case");
+						InetAddress address = packet.getAddress();
+						prevAddress = address.getHostAddress();
+						System.out.println("received PUB packet from : " + prevAddress);
 
 						int identifier = getIdentifier(packet, data); // Get the next 4 bytes as an integer
+						System.out.println((" destination identifier : " + identifier));
 
 						// Retrieve the destination from the routing table
 						SocketAddress destination = routingTable.get(identifier);
 						byte[] byteArray = new byte[]{1, 2, 3, 4, 5};
 						if (destination == null) {
-							broadcastPacketWithIdentifier(routerAddresses, identifier);
+							broadcastPacketWithIdentifier(routerAddresses, identifier, prevAddress);
 							System.out.println("broadcasted");
 						}
 						else {
@@ -64,10 +67,13 @@ public class Server {
 						System.out.println("Rcv response:" + packet.getSocketAddress());
 						break;
 					case Header.RECEIVERHELLO:
+						System.out.println("entered receiverHello");
 						SocketAddress receiverAddress = packet.getSocketAddress();
 						int receiverIdentifier = getIdentifier(packet, data); // Get the next 4 bytes as an integer
+						System.out.println(" receiver identifier : " + receiverIdentifier);
+						System.out.println(" receiver address : " + receiverAddress);
 						routingTable.put(receiverIdentifier, receiverAddress);
-						System.out.println("entered receiverHello");
+						System.out.println("put address with identifier : " + receiverIdentifier);
 						break;
 					case Header.HELLO:
 						System.out.println("Received hello from: " + packet.getSocketAddress());
@@ -207,10 +213,12 @@ public class Server {
 		return routerAddresses;
 	}
 
-	public static void broadcastPacketWithIdentifier(ArrayList<String> addresses, int destIdentifier) throws IOException {
+	public static void broadcastPacketWithIdentifier(ArrayList<String> addresses, int destIdentifier, String prevAddress) throws IOException {
 
+		byte[] testIdentifier = new byte[]{1, 2, 3, 4};
 		// Create the header with the identifier
-		byte[] header = ByteBuffer.allocate(4).put(Header.PUB).put((byte) destIdentifier).array();
+		//byte[] header = ByteBuffer.allocate(Header.HeaderSize).put(Header.PUB).put((byte) destIdentifier).array();
+		byte[] header = ByteBuffer.allocate(Header.HeaderSize).put(Header.PUB).put(testIdentifier).array();
 		byte[] buffer = new byte[header.length];
 
 		System.arraycopy(header, 0, buffer, 0, header.length);
@@ -220,14 +228,16 @@ public class Server {
 		int i = 0;
 		for (String baseAddr : addresses) {
 			String localAddress = addresses.get(i);
+			System.out.println("local adddress : " + localAddress);
 			i++;
 			String networkPart = baseAddr.substring(0, baseAddr.lastIndexOf(".") + 1);
 			for (int host = 1; host <= 254; host++) {
 				String fullAddr = networkPart + host;
-				if (!fullAddr.equals(localAddress)) {
+				if (!fullAddr.equals(localAddress) && !fullAddr.equals(prevAddress)) {
 					DatagramPacket pubPacket = new DatagramPacket(buffer, buffer.length,
 							new InetSocketAddress(fullAddr, Server.port));
 					socket.send(pubPacket);
+					System.out.println(" broadcasted to : " + fullAddr);
 				}
 			}
 		}

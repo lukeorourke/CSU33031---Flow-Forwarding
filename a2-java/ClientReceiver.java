@@ -12,14 +12,16 @@ public class ClientReceiver {
     public ClientReceiver(String routerAddress) throws IOException {
         // Bind the socket to a specific port to listen for incoming packets
         socket = new DatagramSocket(Server.port);
-
+        ByteBuffer wrapped = ByteBuffer.wrap(identifier); // big-endian by default
+        System.out.println("identifier " + wrapped.getInt());
         // Send a packet to the router with the identifier as the header
         sendPacketToRouter(routerAddress);
     }
 
     private void sendPacketToRouter(String routerAddress) throws IOException {
         // Create the packet with the identifier as the header
-        byte[] buffer = ByteBuffer.allocate(Header.HeaderSize + identifier.length).put(Header.RECEIVERHELLO).put(identifier).array();
+        ByteBuffer wrappedIdentifier = ByteBuffer.wrap(identifier); // big-endian by default
+        byte[] buffer = ByteBuffer.allocate(Header.HeaderSize + wrappedIdentifier.capacity()).put(Header.RECEIVERHELLO).put(wrappedIdentifier).array();
         InetAddress address = InetAddress.getByName(routerAddress);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, Server.port);
 
