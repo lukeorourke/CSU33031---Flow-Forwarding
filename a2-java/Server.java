@@ -47,13 +47,16 @@ public class Server {
 						System.out.println("received PUB packet from : " + prevAddress);
 
 						int identifier = getIdentifier(packet, data); // Get the next 4 bytes as an integer
+						int identifierOffset = 1;
+						byte[] byteIdentifier = new byte[4];
+						System.arraycopy(data, identifierOffset, byteIdentifier, 0, 4);
 						System.out.println((" destination identifier : " + identifier));
 
 						// Retrieve the destination from the routing table
 						SocketAddress destination = routingTable.get(identifier);
 						byte[] byteArray = new byte[]{1, 2, 3, 4, 5};
 						if (destination == null) {
-							broadcastPacketWithIdentifier(routerAddresses, identifier, prevAddress);
+							broadcastPacketWithIdentifier(routerAddresses, byteIdentifier, prevAddress);
 							System.out.println("broadcasted");
 						}
 						else {
@@ -213,12 +216,11 @@ public class Server {
 		return routerAddresses;
 	}
 
-	public static void broadcastPacketWithIdentifier(ArrayList<String> addresses, int destIdentifier, String prevAddress) throws IOException {
+	public static void broadcastPacketWithIdentifier(ArrayList<String> addresses, byte[] destIdentifier, String prevAddress) throws IOException {
 
-		byte[] testIdentifier = new byte[]{1, 2, 3, 4};
+
 		// Create the header with the identifier
-		//byte[] header = ByteBuffer.allocate(Header.HeaderSize).put(Header.PUB).put((byte) destIdentifier).array();
-		byte[] header = ByteBuffer.allocate(Header.HeaderSize).put(Header.PUB).put(testIdentifier).array();
+		byte[] header = ByteBuffer.allocate(Header.HeaderSize).put(Header.PUB).put(destIdentifier).array();
 		byte[] buffer = new byte[header.length];
 
 		System.arraycopy(header, 0, buffer, 0, header.length);
