@@ -1,0 +1,436 @@
+%%
+% Template for Assignment Reports
+% 
+%
+
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage{graphicx,color}
+\usepackage{anysize}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{float}
+
+% Margins
+%\topmargin=-0.45in
+%\evensidemargin=0in
+%\oddsidemargin=0in
+\textwidth=6.5in
+%\textheight=9.0in
+%\headsep=0.25in 
+\linespread{1.0} % Line spacing
+
+%%------------------------------------------------
+%% Image and Listing code
+%%------------------------------------------------
+%% Examples for the commands in the document below
+%%
+%% includecode:
+%% \includecode{caption for table of listings}{caption for reader}{filename}
+%% - includes a file with code and adds a caption that should describe the code in some detail and a shorter caption for the table of listings
+\newcommand{\includecode}[4]{\lstinputlisting[float, caption={[#1]#2}, captionpos=b, frame=single, label={#3}]{#4}}
+
+
+%% includescalefigure:
+%% \includescalefigure{label}{short caption}{long caption}{scale}{filename}
+%% - includes a figure with a given label, a short caption for the table of contents and a longer caption that describes the figure in some detail and a scale factor 'scale'
+\newcommand{\includescalefigure}[5]{
+\begin{figure}[htb]
+\centering
+\includegraphics[width=#4\linewidth]{#5}
+\captionsetup{width=.8\linewidth} 
+\caption[#2]{#3}
+\label{#1}
+\end{figure}
+}
+
+%% includefigure:
+%% \includefigure{label}{short caption}{long caption}{filename}
+%% - includes a figure with a given label, a short caption for the table of contents and a longer caption that describes the figure in some detail
+\newcommand{\includefigure}[4]{
+\begin{figure}[htb]
+\centering
+\includegraphics{#4}
+\captionsetup{width=.8\linewidth} 
+\caption[#2]{#3}
+\label{#1}
+\end{figure}
+}
+
+
+%%------------------------------------------------
+%% Parameters
+%%------------------------------------------------
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\authorName} % Top left header
+\chead{\moduleCode\ - \assignmentTitle} % Top center header
+\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+\newcommand{\assignmentTitle}{Assignment\ \#2: Flow Forwarding} % Assignment title
+\newcommand{\moduleCode}{CSU33031} 
+\newcommand{\moduleName}{Computer Networks} 
+\newcommand{\authorName}{Luke\ O'Rourke} % Your name ***EDIT HERE***
+\newcommand{\authorID}{Std\# 21365366} % Your student ID ***EDIT HERE***
+\newcommand{\reportDate}{\printDate}
+
+
+%%------------------------------------------------
+%%	Title Page
+%%------------------------------------------------
+\title{
+\vspace{-1in}
+\begin{figure}[!ht]
+\flushleft
+\includegraphics[width=0.4\linewidth]{reduced-trinity.png}
+\end{figure}
+\vspace{-0.5cm}
+\hrulefill \\
+\vspace{0.5cm}
+\textmd{\textbf{\moduleCode\ \moduleName}}\\
+\textmd{\textbf{\assignmentTitle}}\\
+\vspace{0.5cm}
+\hrulefill \\
+}
+\author{\textbf{\authorName,\ \authorID}}
+\date{\today}
+
+
+%%------------------------------------------------
+%% Document
+%%------------------------------------------------
+\begin{document}
+%% Defaults for listings
+\lstset{language=Python, captionpos=b, frame=single}
+\captionsetup{width=.8\linewidth} 
+
+\maketitle
+\tableofcontents
+\vspace{0.5in}
+
+
+%% Generally, a lot of reports in Computer Science follow a similar layout including the following sections:
+%% Abstract
+%% Introduction
+%% Related Work (Background/State-of-the-Art)
+%% Problem Statement
+%% Design (abstract solution)
+%% Implementation (actual realisation)
+%% Evaluation (objective assessment)
+%% Conclusions & Future Work
+%% Bibliography
+%%
+%% For reports on assignments, we will skip a number of these sections such as abstract, related work, problem statement etc.
+%%------------------------------------------------
+\section{Introduction}
+\label{sec:Intro}
+
+The objective of this report is to provide a comprehensive narrative of the development and implementation of a network communication protocol about decisions to forward flows of packets, and the information that is kept at network elements that make forwarding decisions. The design of forwarding mechanisms aims to reduce the communication necessary to establish forwarding information while providing flexibility and fault-tolerance. This report will not only elucidate the intricate technicalities involved in the development of key components, but also the rationale behind each design and implementation choice.
+
+
+The assignment describes two key components — Endpoints(Clients) and Routers(Servers). The two components transmit packets over User Datagram Protocol (UDP). My approach allows Endpoints to send packets to the router that it is connected to. The packet is then routed to the destination endpoint, specified by the original sender. The destination endpoint then sends a response packet, which is routed back to the original sender. In subsequent sections of this report, I will highlight exactly how this is done.
+
+
+The report is structured to first set the scene by detailing the technical background and the specific challenges this project aims to address. Following this, a detailed breakdown of each component's design and implementation is provided, along with an analysis of their roles in the broader context of network communication. 
+
+
+Concluding with reflective insights and a summary of the project’s achievements, this report aims to provide a clear and informative overview of the project, highlighting both its technical accomplishments and the learning experiences garnered throughout its development.
+
+
+%%------------------------------------------------
+\section{Background}
+\label{sec:background}
+
+In this section, I will explore the foundational work and key technologies that underpin the development of my Java-based network communication protocol. A thorough comprehension of these elements is crucial for grasping the overall context and the methodologies employed in my project. The section begins with an exploration of the technical background crucial to our project, followed by a detailed examination of closely related projects. This approach not only provides a clear understanding of the state-of-the-art in this field but also contextualizes our contributions within this broader framework.
+
+\subsection{Technical Background}
+
+The foundation of my project is anchored in several key technologies and tools, each playing a vital role in realizing my solution:
+\begin{itemize}
+
+	\item Java's extensive networking capabilities, particularly through its java.net package, are fundamental to my project. This package enables the handling of both TCP and UDP protocols, with our focus being prominently on the latter. The User Datagram Protocol (UDP) is preferred in my design for its minimal overhead and faster data transmission capabilities, essential for real-time applications. Java's seamless integration with UDP allows me to efficiently handle packet transmission, including aspects like socket creation, data packet encapsulation, and managing network I/O. Additionally, Java’s built-in mechanisms for handling network exceptions make it an ideal choice for network programming.
+
+
+	\item Integrated Development Environment (IDE) Utilization: The use of sophisticated IDEs like IntelliJ IDEA has been instrumental in the development process. IntelliJ's intelligent code analysis, advanced refactoring tools, and seamless integration with build automation tools have significantly enhanced productivity and code quality. Furthermore, its support for a wide range of plugins and version control systems like Git has facilitated collaborative development and continuous integration, ensuring that the project adheres to best practices in software development.
+
+
+	\item Containerization with Docker: Docker's role in my project extends beyond mere containerization; it provides a flexible and controlled environment for testing and deployment. By creating isolated containers for different components of my network protocol, Docker enables me to replicate various network scenarios and topologies, allowing for thorough testing under diverse conditions. The use of Docker Compose further simplifies the process of defining and running multi-container Docker applications, making it easier to manage the interactions between different components of our system. The ability to quickly spin up or tear down these environments not only accelerates the development cycle but also ensures consistency across development, testing, and production environments.
+
+
+	\item Network Analysis with Wireshark: Wireshark, a prominent network protocol analyzer, plays a crucial role in debugging and optimizing our network protocol. It allows for detailed inspection of network traffic and packet analysis, which is invaluable in understanding the behavior of our network under various conditions. By using Wireshark, we can capture and interactively browse the traffic running on our network, aiding in identifying and resolving issues such as packet loss, latency, and protocol inefficiencies. Its comprehensive visualization tools and filters have been instrumental in refining our packet routing logic and ensuring the robustness of our network communication.
+\end{itemize}
+
+\subsection{Closely-Related Projects}
+
+My project draws significant inspiration from a range of closely related projects that utilize the User Datagram Protocol (UDP) for their core operations, and the Hello Protocol for various network routing protocols. 
+
+\subsubsection*{UDP}
+UDP is often selected for its efficiency in sending packets without the need for establishing a connection, a feature that is pivotal in scenarios where quick data transfer takes precedence over error correction. The standard UDP packet structure, with its limited error-checking capabilities and a maximum size of 65,535 bytes, is often customized to suit specific application needs. This includes tailored headers, explained later in this report, and optimized payload management to fit various data types, from control signals to bulk data streams.
+
+Such projects typically bypass the traditional use of UDP's checksum for error verification, favouring speed and throughput. This approach, combined with the protocol's ability not to require acknowledgments, allows for a rapid and uninterrupted flow of data, accepting occasional packet losses as a trade-off for greater overall transmission efficiency. The insights gained from these projects have been instrumental in shaping my network packet routing strategy, particularly in optimizing packet structure and transmission tactics for the specific requirements.
+
+\subsubsection*{Hello Protocol}
+
+This protocol is a fundamental part of various network routing protocols, in these protocols, the hello messages serve several purposes:
+\begin{itemize}
+	\item Neighbor Discovery: Routers use hello messages to identify other routers on their network segments. By exchanging these messages, routers can learn about the presence and identity of their neighbors.
+
+
+	\item Keepalive Mechanism: Regular exchange of hello messages ensures that routers are aware of the status of their neighbors. If a router stops receiving hello messages from a neighbor, it can infer that the neighbor is no longer reachable.
+
+
+	\item Parameter Agreement: Hello messages can also carry information about the parameters of the routing protocol, such as timers, which need to be agreed upon by neighboring routers for the protocol to function correctly.
+\end{itemize}
+
+For this specific assignment, I will use the hello protocol for neighbour discovery. I will go into detail in the Implementation section 5 of this report.
+
+
+\subsection{Summary}
+
+This section concisely addresses the fundamental challenge my project seeks to tackle: making efficient decisions for forwarding flows of packets and managing the information at network elements responsible for these decisions. Leveraging Java's networking capabilities, especially in handling UDP, I focused on optimizing packet transmissions. The use of tools like Docker and Wireshark enhances my ability to test and analyze different forwarding scenarios and strategies. Insights from related projects using UDP have been instrumental in formulating approaches for packet management and forwarding logic. By integrating these technologies and learnings, I aimed to improve the efficiency and reliability of packet forwarding decisions, addressing the critical need for effective data flow management in network communication.
+
+
+%%------------------------------------------------
+\section{Problem Statement}
+\label{sec:ProblemStatement}
+
+This project aims to develop an efficient and reliable protocol for managing the flow and forwarding of network packets, with a focus on optimizing the decision-making processes at network elements responsible for these actions. At its core, there exists 3 routers , 4 endpoints, and 6 networks, each connected as seen In figure 1. The protocol will be grounded in the User Datagram Protocol (UDP) to leverage its speed and efficiency, suitable for real-time data handling.
+
+
+%%------------------------------------------------
+\section{Design}
+\label{sec:Design}
+
+The design of my protocol focuses on optimizing the flow and forwarding of network packets. Endpoints may send or receive packets, and send a response packet back to where a received packet came from, Their primary role is to initiate and terminate the communication process. Routers are connected to each other, and endpoints. They act as devices that direct data packets between endpoints. They are responsible for determining the best path for data to travel across the network to reach its destination efficiently. The protocol is architected to handle diverse network scenarios, ensuring data integrity and minimal latency in packet delivery. The protocol’s architecture is designed to be scalable, accommodating growth in network size and complexity. 
+
+
+%%------------------------------------------------
+\section{Implementation}
+\label{sec:Implementation}
+
+This section delivers a description of how I have implemented the functionality for the endpoints and routers, and the practical realization of the network packet routing protocol. I will explain how each different components interacts with the next, and how they work in unison to facilitate efficient packet routing.
+
+
+\subsection{Topology}
+
+The network topology implemented in this project is designed to facilitate the efficient routing of packets from multiple endpoints to a specific destination. My topology, as visualized in figure ~\ref{fig:newtopology} , consists of three endpoints (Endpoints 1, 3, and 4) that communicate through three routers, with Endpoint 2 being the ultimate destination for all packets (4 endpoints in total).
+
+\subsubsection*{Components and Structure}
+\begin{itemize}
+	\item Endpoints (1, 3, and 4): These are the source nodes from which data packets originate. They are configured to send packets to Router 1, with the intended destination for all packets being Endpoint 2. 
+	\item Routers: Upon startup, Routers are equipped with the necessary logic to determine the most efficient path for packet forwarding, ensuring that all packets from Endpoints 1, 3, and 4 reach the intended destination.
+	\item Endpoint 2: The designated receiver for all packets sent from Endpoints 1, 3, and 4. It is configured to accept incoming packets and process them accordingly.
+\end{itemize}
+
+\includescalefigure{fig:newtopology}{Design Of Topology}{This configuration demonstrates a multi-layered approach to routing, where data packets pass through three routers,  before reaching their destination.}{0.7}{newtopology.png}
+
+
+
+\subsection{Router}
+
+This component acts as a router. It’s main functionalities include the hello protocol, dynamic neighbour router discovery upon startup, packet receiving, and broadcast or forward decision making based on routing tables, and path learning.
+
+
+
+\subsubsection*{Hello Protocol}
+\begin{itemize}
+	\item Discovering router addresses dynamically : Upon calling, this method systematically enumerates every network interface available to the router, extracting their associated IP addresses. It filters out any local addresses, represented typically by the 127.0.0.x subnet, to focus solely on addresses that relate to outward-facing interfaces. These external addresses are pivotal for the router to engage in communication with other routers. They are collected into a list named routerAddresses as seen in the code listing ~\ref{lst:snippet2}, allowing for subsequent outreach actions. This list becomes a critical resource for initiating the "Hello Protocol," as it contains all potential addresses through which the router can announce its presence to peers in the network, underpinning the protocol's discovery phase.
+\end{itemize}
+
+\begin{lstlisting}[caption={[code snippet 1]This snippet demonstrates how I enumerate every network interface available, exctracting associated IP addresses. Local addresses represented by 127.0.0.x are filtered out. Each external address is added to a list, to be used later for broadcasting or for a Hello Protocol.}, label={lst:snippet2}]
+Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetwork-
+-Interfaces();
+while (networkInterfaces.hasMoreElements()) {
+   NetworkInterface networkInterface = networkInterfaces.nextElement();
+   Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+   while (inetAddresses.hasMoreElements()) {
+    InetAddress inetAddress = inetAddresses.nextElement();
+    String[] split = inetAddress.getHostAddress().toString().split("\\.");
+    String front = split[0]+"."+ split[1] + "." + split[2];
+    if(!front.equals("127.0.0")){
+     System.out.println("IP Address: " + inetAddress.getHostAddress());
+     routerAddresses.add(inetAddress.getHostAddress());
+    }
+   }
+  }
+\end{lstlisting}
+
+
+\begin{itemize}
+	\item Sending Hello Messages : Once the router is aware of its potential communicative paths, it proceeds to the next critical phase—signalling its presence. This is handled by the sendHelloToAllNetworks method, seen in listing ~\ref{lst:snippet2}. A "Hello" message, acting as a beacon in real life, is constructed, comprising of a header that flags the packet's intent and the router's 4 byte unique identifier. This packet serves as a handshake initiation, signalling the router's readiness to establish communication. The method traverses the listing of each base network address, crafting a full IP address for each possible host within the subnet. 1 to 254, is appended to the network part to create a full IP address, barring the router's own address to prevent self-communication. These "Hello" packets are then dispatched into the network, using the UDP protocol, sent to the designated port specified by Server.port. 
+
+\begin{lstlisting}[caption={[code snippet 2]This snippet demonstrates how I implemented the hello protocol. I begin by traversing the list of each base network address, creating the full IP address for each possible host. 1-254 is added to the end of the network part - creating a full IP address. The routers own address is filtered out, to prevent self communication. Hello messages are then dispatched into the network }, label={lst:snippet2}]
+for (String baseAddr : addresses) {
+   String localAddress = addresses.get(i);
+   i++;
+   String networkPart = baseAddr.substring(0, baseAddr.lastIndexOf(".") + 1);
+   for (int host = 1; host <= 254; host++) {
+    String fullAddr = networkPart + host;
+    if (!fullAddr.equals(localAddress)) {
+     DatagramPacket helloPacket = new DatagramPacket(buffer, buffer.length,
+     new InetSocketAddress(fullAddr, Server.port));
+     socket.send(helloPacket);
+     System.out.println("Sent hello to: " + fullAddr);
+    }
+   }
+  }  
+\end{lstlisting}
+
+	\item Responding to hello messages : Once a packet is received with the header Header.HELLO, it indicates that another device on the network is announcing its presence. A method sendHelloResponse is then called, passing the sender's socket address as an argument. This method is responsible for sending back a "Hello Response" message, confirming the router's acknowledgment of the original "Hello" message. A packet is constructed to send back to the original sender of the hello message. A header is constructed with Header.HelloResponse packet type, and the routers unique 4 byte identifier. Finally, the response packet is sent through the socket to the original sender.
+When handling a Header.HELLORESPONSE packet type, the router recognizes it as a response from another device to its earlier "Hello" message, indicating a successful two-way handshake. It extracts the sender's unique identifier from the packet, which is used as a key in the router's routing table. The identifier and sender's address are then stored in the routing table, allowing the router to keep track of and route packets to this newly discovered neighbour in the future.
+\end{itemize}
+
+\subsubsection*{Packet Routing}
+
+\begin{itemize}
+	\item Interpreting Packets: Upon the reception of a packet, the router engages in an examination of the packet's contents, starting with the header. The header contains the packet type, a byte that dictates how the router should treat the incoming data. This process is critical as it initiates the router's subsequent actions. In relation to routing, the header will be of type Header.PUB, which means that it is a packet from an endpoint, for another endpoint. 
+	\item Handling Publish (PUB) Packets: Identifying a packet as a Header.PUB type initiates a specific protocol within the router's operational set. These packets signal a request to publish or disseminate information across the network. The router acknowledges this by logging the sender's address, a predecessor to potentially relaying a response back. It retrieves an identifier—the unique 4 byte identifier of the endpoint—from the packet, which serves as a directional indicator within the network's topology. This identifier is essential for the router to understand where the packet's contents are going to, setting a path through the network's web.
+	\item Forwarding or Broadcasting: The router's decision to forward or broadcast packets hinges on its knowledge of the network as seen in listing ~\ref{lst:snippet3}, stored in a routing table that maps unique 4 byte identifiers for network components to their addresses. If a known pathway exists, the router dispatches the packet efficiently to the next designated stop. Conversely, if the destination remains unknown, the router broadcasts the packet across a spectrum of network addresses. This ensures that the information reaches every corner of the network.
+\end{itemize}
+
+\begin{lstlisting}[caption={[code snippet 3] This listing demonstrates the decision to forward or broadcast the packet sent from an endpoint. If an address does not exist in the routing table with the macthing identifier, the packet gets broadcasted. If an address does exist in the routing table with the matching identifier, the packet is forwarded to the destination. }, label={lst:snippet3}]
+SocketAddress destination = routingTable.get(identifier);
+if (destination == null) {
+ broadcastPacketWithIdentifier(routerAddresses, byteIdentifier, prevAddress);
+ System.out.println("broadcasted");
+ }
+ else {
+ forward(destination, byteArray);
+ System.out.println("sent to address with identifier : " + identifier);
+ }
+\end{lstlisting}
+
+\begin{itemize}
+	\item Broadcasting Packets: A PUB packet is broadcasted when the direct paths to destinations are not explicitly known, necessitating a broader approach to packet dissemination. The process begins with the construction of a packet header, uniquely tailored to each broadcast. Here, a header is dynamically generated, incorporating the Header.PUB type and the destination identifier (destIdentifier). The method then enters a procedure to traverse through each network address within the provided addresses list. The router iterates over each subnet, constructing potential host addresses by concatenating the network part of the base address with host numbers from 1 to 254. It excludes its own address and the sender's address (prevAddress) to prevent redundant communication. For each valid address, a DatagramPacket is created and dispatched into the network, reaching out to every conceivable node within the subnet. This wide-net approach ensures that the router actively participates in discovering new routes.
+	\item Forwarding Packets: The act of forwarding is very simple. If the 4 byte identifier in the header of the received PUB packet, matches a key in the routing table, i.e. the destination is known, the packet is directly forwarded to the appropriate address in the routing table. A new packet is constructed with the appropriate header and payload, then dispatched to the target address.
+
+\end{itemize}
+
+\subsection{Endpoint}
+
+My implementation of the endpoint component is very simple. The packet is created in order to be sent to a specific endpoint, it is then sent to the router that it is connected to, and then waits on a response from the destination. Once a response is received, a phase of clean-up occurs, asking the network elements to remove any information about this endpoint in their routing tables.
+
+\subsubsection*{Packet Preperation}
+Before dispatching any data, the endpoint constructs its packet, a process that begins with header creation. This header is a crucial part of the packet, encompassing the packet type (Header.PUB) and a destination identifier (destIdentifier). Following the header, the client prepares its payload – the actual message content, and is then ready to be routed through the network.
+
+\subsubsection*{Sending The Packet}
+The endpoint encapsulates the prepared data into a DatagramPacket, equipped with both the header and payload. To ensure the packet reaches its intended destination, the client employs an InetSocketAddress, which utilizes command-line arguments to determine the destination's IP address (args[0]) and the server's listening port (Server.port). The packet is then sent once the address is set.
+
+\subsubsection*{Receiving A Response}
+After sending its message, the client transitions into a receptive state, preparing to handle any incoming responses. It allocates a new buffer, large enough to accommodate incoming data, and readies a DatagramPacket for reception. Upon the arrival of a response, the client not only receives the data but also logs the sender's details and the content of the response, providing visibility into the communication exchange.
+
+\subsubsection{Clean-up}
+Post-communication, the client enters a phase of conclusion and clean-up. This stage is characterized by asking the routers in the network to remove their forwarding information from their tables by information the router on their network which will then inform the next router etc. The endpoint can then stop listening for incoming network traffic., a necessary step to free up network resources and ensure that the client's operation is neatly concluded. This clean-up process is as vital as the initialization, ensuring that the client leaves the network environment in an orderly state, ready for future communication sessions.
+
+%%------------------------------------------------
+\section{Discussion}
+\label{sec:Discussion}
+
+I believe that my implementation of this network packet routing project, utilizing Java and UDP protocol, represents a successful attempt of managing the flow of packets across a network. The system effectively addresses the primary objective: making informed decisions on forwarding packets based on network topology and the information held by network elements.
+
+\subsubsection*{Key Strengths : }
+
+\begin{itemize}
+	\item Efficient Packet Routing: The project successfully demonstrates efficient packet routing from multiple endpoints to the correct designated destination, using broadcasting and direct forwarding where necessary.
+	\item Dynamic Network Discovery: The use of the Hello Protocol and dynamic address discovery ensures the network is self-aware, adapting to changes in topology and maintaining consistent data flow.
+\end{itemize}
+
+\subsubsection*{Areas For Improvement : }
+
+\begin{itemize}
+	\item Lack of Acknowledgments (ACKs): The system, while utilizing UDP for its speed and efficiency, does not implement ACKs for confirming successful packet reception. This could be an area of improvement for future iterations, especially for critical data transmission.
+	\item Scalability and Overload Handling: As observed in one of the sample reports, the lack of an efficient packet queuing system could lead to potential issues in handling a large number of packet requests, suggesting a need for scalability considerations.
+	\item Enhanced Error Handling: Implementing more comprehensive error detection and correction mechanisms can significantly improve data transmission reliability, especially in a UDP-based system where packet loss can be more prevalent.
+\end{itemize}
+
+it becomes clear that while the core objectives were met, there are several avenues for enhancement, particularly in the realms of acknowledgements, and incorporating more robust error-handling mechanisms. Despite these challenges, the project lays a strong foundation for a scalable and efficient packet routing system. Moving forward, integrating more advanced features and addressing the identified limitations will be crucial for evolving the system to handle more complex network scenarios effectively.
+
+
+%%------------------------------------------------
+%% Summary of the document i.e. what was presented, what was the outcome of the project
+%% and the document.
+\section{Summary}
+\label{sec:Summary}
+
+This report details my development and implementation of a network packet routing protocol using Java and UDP. The project concludes in a system capable of efficient packet routing from various endpoints to specified destinations. Key components of this system include dynamic address discovery using the Hello Protocol, broadcasting and decisions to forward flows of packets based on a comprehensive routing table. 
+Throughout the development, my focus remained on creating a scalable, resource-efficient solution. Despite some areas needing improvement, such as the implementation of ACKs for reliable data transmission and enhancements in scalability, I believe that project lays a solid foundation for a scalable and efficient packet routing system. 
+Figures and screenshots within the report illustrate the system's operation, from packet transmission by clients to the dynamic routing decisions taken by router elements. I believe that the result shows the project's success in achieving a balance between efficiency, adaptability, and user-friendliness, making it a viable solution for diverse network communication scenarios.
+
+
+%%------------------------------------------------
+%% The reflection should layout your thoughts on the 
+%% How many hours did you spent on the assignment? What worked well for you/what didn't?
+%% What would you improve/change in your approach for the next assignment?
+\section{Reflection}
+\label{sec:Reflection}
+
+Tackling this project was an experience of both challenges and achievements. Initially, the difficulties of the assignment seemed daunting. The broad scope meant there were numerous decisions to make, a lot that required planning to ensure they aligned with the project's objectives. In relation to documentation, now I recognize the value that additional planning could have brought, particularly in coordinating the coding and reporting phases. I devoted a considerable amount of time—over 50 hours— navigating through the project's demands, with a significant portion of that time invested in interpreting the assignment's requirements and deciding on a viable solution.
+The individual nature of this project was an enjoyable experience, diverging from my usual collaborative educational environment. It placed the entirety of the responsibility on my shoulders, an aspect that was both exciting and, at times, overwhelming. From the initial uncertainty to the final stages, the project developed as a huge learning curve, as I was forced into new areas, such as dynamic routing and the hello protocol, that were previously foreign to me.
+Upon reflection, I am proud of my completion of the task, as I feel this assignment needed extensive knowledge of computer network matters, which I find quite difficult. I really enjoyed working by myself as I got to adopt all my own ideas, and solutions to problems that occurred – and there were a lot of them. Looking ahead, I aim to adopt a more structured approach to my work—meticulously logging hours and ensuring a balanced allocation of time across all components of the project. Additionally, I plan to engage in the documentation loop earlier in the development cycle. This proactive approach will likely streamline the process, preventing the need for significant reworks and adopting a more efficient path to project completion.
+
+
+
+%\bibliographystyle{apalike2}
+\bibliographystyle{plain}
+\bibliography{sample} 
+
+
+
+\appendix
+\section{Additional Informaiton}
+
+The following sections will attempt to explain 2 aspects in the same document: 1) The use of images in the Latex template, and 2) a collection of Do's \& Don't's in reports.
+
+%The intention behind the individual sections, and 2) Examples of the use of this template, Latex macros and the inclusion of existing code. While the structure and intention of the sections is visible in the PDF; for some of the information regarding Latex, the Latex sources of the template need to be consulted as well.
+
+
+\subsection*{Example of a Figure in this Template}
+\label{sec:figures}
+
+%% Use ~ as non-breakable space between the last word of the sentence and the reference
+The arranging of figures in Latex can lead to spending a lot of time on minor issues e.g.positioning a figure in a specific location on a page, fixing minor issues with an exact size of a figure, etc. figure~\ref{fig:topology} provides a simple example that demonstrates the use of one of two macros for handling figures, called  includescalefigure. Figures should always be readable without magnification when printed and the resolution of an image should be sufficient to provide a clear and sharp picture when printed. Dark backgrounds often make figures difficult to read when printed or included in PDFs - snapshots of terminals for example should be taken after the background for these terminals has been set to a bright background.
+
+\includescalefigure{fig:topology}{Example of a Topology}{A caption should describe the figure to the reader and explain to the reader the meaning of the figure. A sub-clause of Murphy's Law: If the interpretation of a figure is left to a reader, the reader will misinterpret the figure, feel insulted or decide to ignore it. Do not leave the interpretation of your figures up to the reader!}{0.9}{topology.png}
+
+The image is include with the following text, including a label, a short caption for a table of content, a longer caption to describe the figure to the reader, a scale factor to adjust the image to the width of a page and a filename: 
+\begin{verbatim}
+	\includescalefigure{fig:topology}{Example of a Topology}{A caption should
+	describe the figure to the reader and explain to the reader the meaning of
+	the figure. A sub-clause of Murphy's Law: If the interpretation of a figure
+	is left to a reader, the reader will misinterpret the figure, feel insulted 
+	or decide to ignore it. Do not leave the interpretation of your figures up 
+	to the reader!}{0.9}{topology.png}
+\end{verbatim}
+
+\subsection*{Do's \& Don't's}
+\label{sec:DosAndDonts}
+
+The following points are couple of {\it Do's and Don't's} that I have noted down as feedback to reports over the years. The focus of this list is to encourage writers to be specific in writing reports - some of this is motivated by Strunk and White's The Elements of Style~(\cite{strunk}):
+
+\begin{description}
+	\item [Acronyms:] Acronyms should be introduced by the words they represent followed by the acronym in capitals enclosed in brackets e.g. "...TCP (Transmission Control Protocol)..." $\Rightarrow$  "... Transmission Control Protocol (TCP)..."
+	\item [Contractions:] I would generally suggest to avoid contractions such as "I'd", "They've", etc in reports. In some cases, they are ambiguous e.g. "I'd" $\Rightarrow$ "I would" or "I had" and can lead to misunderstandings.
+	\item [Avoid "do":] Be specific and use specific verbs to describe actions.
+	\item [Adverbs:] Adverbs and adjectives such as "easily", "generally", etc should be removed because they are unspecific e.g. the statement "can be easily implemented" depends very much on the developer. 
+	\item [Articles:] "A" and "an" are indefinite articles; they should be used if the subject is unknown. "The" is a definite article; which should be used if a specific subject is referred to. For example, the subject referred to in "allocated by the coordinator" is not determined at the time of writing and so the sentences should be changed to "allocated by a coordinator".
+	\item [Avoid brackets:] Brackets should not be used to hide sub-sentences, examples or alternatives. The problem with this use of brackets is that it is not specific and keeps the reader guessing the exact meaning that is intended. For example "... system entities (users, networks and services) through ..." should be replaced by "... system entities such as users, networks, and services through ...".
+	\item [Figures:] Figures and graphs should have sufficient resolution; figures with low resolution appear blurred and require the reader to make assumptions.
+	\item [Punctuation:] A statement is concluded with a period; a question with a question mark. 
+	\item [Spellcheckers:] Use a spellchecker!
+\end{description}
+
+
+\end{document}
+
